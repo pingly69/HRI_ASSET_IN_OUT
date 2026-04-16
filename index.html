@@ -118,31 +118,38 @@
                 } else {
                     liff.login();
                 }
-                
-                fetchApprovers();
             } catch (err) { 
                 console.error('LIFF Init Error:', err); 
                 document.getElementById('reqName').placeholder = "ระบุชื่อผู้ขอ";
-                fetchApprovers(); 
             }
         }
 
         async function fetchApprovers() {
+            const select = document.getElementById('approverName');
             try {
-                const res = await fetch(SCRIPT_URL);
+                // เพิ่ม cache: 'no-store' เพื่อป้องกันการดึงข้อมูลเก่าจาก Browser Cache
+                const res = await fetch(SCRIPT_URL, { cache: 'no-store' });
                 const result = await res.json();
+                
                 if (result.status === 'success') {
-                    const select = document.getElementById('approverName');
-                    select.innerHTML = '<option value="">-- เลือกผู้อนุมัติ --</option>';
-                    result.data.forEach(name => {
-                        const opt = document.createElement('option');
-                        opt.value = name; opt.innerText = name;
-                        select.appendChild(opt);
-                    });
+                    if (result.data && result.data.length > 0) {
+                        select.innerHTML = '<option value="">-- เลือกผู้อนุมัติ --</option>';
+                        result.data.forEach(name => {
+                            if(name) {
+                                const opt = document.createElement('option');
+                                opt.value = name; opt.innerText = name;
+                                select.appendChild(opt);
+                            }
+                        });
+                    } else {
+                        select.innerHTML = '<option value="">-- ไม่พบรายชื่อผู้อนุมัติในระบบ --</option>';
+                    }
+                } else {
+                    throw new Error(result.message || 'Unknown error');
                 }
             } catch (err) { 
                 console.error('Fetch Approvers Error:', err); 
-                document.getElementById('approverName').innerHTML = '<option value="">-- โหลดข้อมูลไม่สำเร็จ --</option>';
+                select.innerHTML = '<option value="">-- โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่ --</option>';
             }
         }
 
@@ -236,7 +243,7 @@
                         carType: document.getElementById('carType').value,
                         purpose: document.getElementById('purpose').value,
                         approverName: document.getElementById('approverName').value,
-                        lineUid: lineUid // ส่งค่า userId จาก LIFF ไปยัง GAS
+                        lineUid: lineUid 
                     },
                     details: []
                 };
@@ -275,7 +282,12 @@
             }
         }
 
-        window.onload = () => { initLiff(); addItem(); };
+        // ปรับลำดับการทำงานเพื่อให้ User Experience ดีขึ้น
+        window.onload = () => { 
+            fetchApprovers(); // 1. ดึงรายชื่อผู้อนุมัติทันที
+            initLiff();      // 2. เริ่มต้น LIFF (เพื่อดึงโปรไฟล์)
+            addItem();       // 3. เพิ่มรายการแรก
+        };
     </script>
 </body>
 </html>
