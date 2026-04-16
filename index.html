@@ -52,7 +52,7 @@
                     </div>
                     <div>
                         <label class="block font-medium text-gray-600">ชื่อผู้ขอ</label>
-                        <input type="text" id="reqName" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required placeholder="ดึงข้อมูลจาก LINE อัตโนมัติ">
+                        <input type="text" id="reqName" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required placeholder="กำลังดึงข้อมูล Profile...">
                     </div>
                     <div>
                         <label class="block font-medium text-gray-600">บริษัทผู้ขอ</label>
@@ -99,20 +99,35 @@
     </main>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxu_uZxnbSDM_Gs3Zh0vGUWzGVwp7r_evllWLrmnlZg8VaTr73GGYNzEtJZhWkd6R_X/exec';
+        // อัปเดต URL ล่าสุดตามที่พี่ปิงส่งมา
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxu_uZxnbSDM_Gs3Zh0vGUWzGUWzGVwp7r_evllWLrmnlZg8VaTr73GGYNzEtJZhWkd6R_X/exec';
         let lineUid = 'unknown';
 
         async function initLiff() {
             try {
+                // ใส่ LIFF ID ของพี่ที่นี่
                 await liff.init({ liffId: "YOUR_LIFF_ID" });
+                
                 if (liff.isLoggedIn()) {
                     const profile = await liff.getProfile();
                     lineUid = profile.userId;
-                    document.getElementById('reqName').value = profile.displayName;
-                    document.getElementById('userImg').src = profile.pictureUrl;
+                    // แสดงชื่อ Profile ตั้งต้น แต่ให้เขาแก้ไขได้
+                    document.getElementById('reqName').value = profile.displayName || "";
+                    if (profile.pictureUrl) {
+                        document.getElementById('userImg').src = profile.pictureUrl;
+                    }
+                } else {
+                    // หากไม่ได้เข้าผ่าน LINE App ให้ขอ Login
+                    // liff.login(); 
                 }
+                
+                // หลังจาก LIFF พร้อม ค่อยไปดึงรายชื่อผู้อนุมัติ
                 fetchApprovers();
-            } catch (err) { console.error('LIFF Error:', err); fetchApprovers(); }
+            } catch (err) { 
+                console.error('LIFF Error:', err); 
+                document.getElementById('reqName').placeholder = "ระบุชื่อผู้ขอ";
+                fetchApprovers(); 
+            }
         }
 
         async function fetchApprovers() {
@@ -128,7 +143,11 @@
                         select.appendChild(opt);
                     });
                 }
-            } catch (err) { console.error('Fetch Approvers Error:', err); }
+            } catch (err) { 
+                console.error('Fetch Approvers Error:', err); 
+                const select = document.getElementById('approverName');
+                select.innerHTML = '<option value="">-- ไม่สามารถดึงข้อมูลผู้อนุมัติได้ --</option>';
+            }
         }
 
         function addItem() {
@@ -175,7 +194,7 @@
             const compressedBase64 = await compressImage(file);
             previewImg.src = compressedBase64;
             previewDiv.classList.remove('hidden');
-            input.dataset.base64 = compressedBase64; // เก็บไว้ใช้ตอน Submit
+            input.dataset.base64 = compressedBase64;
         }
 
         function compressImage(file) {
@@ -187,7 +206,7 @@
                     img.src = event.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800; // ลดขนาดลงให้พอเหมาะ
+                        const MAX_WIDTH = 800; 
                         let width = img.width;
                         let height = img.height;
 
@@ -199,7 +218,7 @@
                         canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        // ส่งออกเป็น JPEG คุณภาพ 0.7 เพื่อลดขนาดไฟล์ได้มาก
+                        // บีบอัดเป็น JPEG 70% เพื่อลดขนาด
                         resolve(canvas.toDataURL('image/jpeg', 0.7));
                     };
                 };
@@ -238,7 +257,6 @@
                     });
                 }
 
-                // เปลี่ยนมาใช้ fetch ปกติเพื่อให้เห็น Error จาก Backend
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify(payload)
@@ -247,7 +265,12 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    Swal.fire('สำเร็จ', result.message, 'success').then(() => location.reload());
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ',
+                        text: result.message,
+                        confirmButtonText: 'ตกลง'
+                    }).then(() => location.reload());
                 } else {
                     throw new Error(result.message);
                 }
