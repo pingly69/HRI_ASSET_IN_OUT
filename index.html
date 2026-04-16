@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Property Pass - บันทึกขออนุญาต</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -172,7 +175,7 @@
                             <input type="number" class="item-qty w-full p-2 border rounded mt-1" required min="1">
                         </div>
                         <div class="md:col-span-4 flex items-center space-x-4">
-                            <input type="file" class="item-img hidden" accept="image/*" id="file_${id}" onchange="handleImage(this, '${id}')">
+                            <input type="file" class="item-img hidden" accept="image/*" capture="environment" id="file_${id}" onchange="handleImage(this, '${id}')">
                             <label for="file_${id}" class="bg-gray-200 px-4 py-2 rounded border cursor-pointer hover:bg-gray-300">
                                 <i class="fas fa-camera mr-1"></i> ถ่ายภาพ/แนบรูป
                             </label>
