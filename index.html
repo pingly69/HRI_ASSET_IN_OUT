@@ -39,7 +39,7 @@
 
     <main class="max-w-4xl mx-auto px-4">
         <form id="requestForm" onsubmit="event.preventDefault(); submitForm();">
-            <!-- Header Data -->
+            <!-- ข้อมูลหลัก (Header) -->
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <h2 class="text-md font-bold border-b pb-2 mb-4 text-blue-800">1. ข้อมูลการเคลื่อนย้าย</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -52,7 +52,7 @@
                     </div>
                     <div>
                         <label class="block font-medium text-gray-600">ชื่อผู้ขอ</label>
-                        <input type="text" id="reqName" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required placeholder="กำลังดึงข้อมูล Profile...">
+                        <input type="text" id="reqName" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required placeholder="กำลังดึงโปรไฟล์ LINE...">
                     </div>
                     <div>
                         <label class="block font-medium text-gray-600">บริษัทผู้ขอ</label>
@@ -81,7 +81,7 @@
                 </div>
             </div>
 
-            <!-- Detail Data -->
+            <!-- รายละเอียดสิ่งของ (Detail) -->
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center border-b pb-2 mb-4">
                     <h2 class="text-md font-bold text-blue-800">2. รายการทรัพย์สิน</h2>
@@ -99,32 +99,29 @@
     </main>
 
     <script>
-        // อัปเดต URL ล่าสุดตามที่พี่ปิงส่งมา
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxu_uZxnbSDM_Gs3Zh0vGUWzGUWzGVwp7r_evllWLrmnlZg8VaTr73GGYNzEtJZhWkd6R_X/exec';
-        let lineUid = 'unknown';
+        // URL ของ GAS ที่พี่ปิงส่งมาล่าสุด
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxu_uZxnbSDM_Gs3Zh0vGUWzGVwp7r_evllWLrmnlZg8VaTr73GGYNzEtJZhWkd6R_X/exec';
+        let lineUid = 'unknown_user';
 
         async function initLiff() {
             try {
-                // ใส่ LIFF ID ของพี่ที่นี่
+                // อัปเดต LIFF ID ตามที่พี่ปิงระบุ
                 await liff.init({ liffId: "2009016720-UeR6qqeG" });
                 
                 if (liff.isLoggedIn()) {
                     const profile = await liff.getProfile();
                     lineUid = profile.userId;
-                    // แสดงชื่อ Profile ตั้งต้น แต่ให้เขาแก้ไขได้
                     document.getElementById('reqName').value = profile.displayName || "";
                     if (profile.pictureUrl) {
                         document.getElementById('userImg').src = profile.pictureUrl;
                     }
                 } else {
-                    // หากไม่ได้เข้าผ่าน LINE App ให้ขอ Login
-                    // liff.login(); 
+                    liff.login();
                 }
                 
-                // หลังจาก LIFF พร้อม ค่อยไปดึงรายชื่อผู้อนุมัติ
                 fetchApprovers();
             } catch (err) { 
-                console.error('LIFF Error:', err); 
+                console.error('LIFF Init Error:', err); 
                 document.getElementById('reqName').placeholder = "ระบุชื่อผู้ขอ";
                 fetchApprovers(); 
             }
@@ -145,8 +142,7 @@
                 }
             } catch (err) { 
                 console.error('Fetch Approvers Error:', err); 
-                const select = document.getElementById('approverName');
-                select.innerHTML = '<option value="">-- ไม่สามารถดึงข้อมูลผู้อนุมัติได้ --</option>';
+                document.getElementById('approverName').innerHTML = '<option value="">-- โหลดข้อมูลไม่สำเร็จ --</option>';
             }
         }
 
@@ -190,11 +186,10 @@
             const previewDiv = document.getElementById('preview_' + id);
             const previewImg = previewDiv.querySelector('img');
             
-            // บีบอัดภาพก่อนแสดงผลและบันทึก
             const compressedBase64 = await compressImage(file);
             previewImg.src = compressedBase64;
             previewDiv.classList.remove('hidden');
-            input.dataset.base64 = compressedBase64;
+            input.dataset.base64 = compressedBase64; 
         }
 
         function compressImage(file) {
@@ -218,7 +213,6 @@
                         canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        // บีบอัดเป็น JPEG 70% เพื่อลดขนาด
                         resolve(canvas.toDataURL('image/jpeg', 0.7));
                     };
                 };
@@ -242,7 +236,7 @@
                         carType: document.getElementById('carType').value,
                         purpose: document.getElementById('purpose').value,
                         approverName: document.getElementById('approverName').value,
-                        lineUid: lineUid
+                        lineUid: lineUid // ส่งค่า userId จาก LIFF ไปยัง GAS
                     },
                     details: []
                 };
