@@ -231,19 +231,27 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
+                    // ปรับปรุงส่วนแจ้งเตือนหลังบันทึกสำเร็จ
                     Swal.fire({
                         icon: 'success',
                         title: 'บันทึกสำเร็จ',
-                        text: result.message,
-                        showCancelButton: !!result.pdfUrl,
-                        confirmButtonText: 'ตกลง',
-                        cancelButtonText: 'เปิดดูไฟล์ PDF',
-                        cancelButtonColor: '#3085d6'
+                        html: `เลขที่เอกสาร: <b>${result.docno}</b><br><br>ระบบสร้างใบคำขอเรียบร้อยแล้ว`,
+                        showConfirmButton: !!result.pdfUrl,
+                        confirmButtonText: '<i class="fas fa-file-pdf mr-1"></i> เปิดดูใบคำขอ (PDF)',
+                        showCancelButton: true,
+                        cancelButtonText: 'ปิด',
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#6e7881',
                     }).then((res) => {
-                        if (res.dismiss === Swal.DismissReason.cancel && result.pdfUrl) {
-                            window.open(result.pdfUrl, '_blank');
+                        if (res.isConfirmed && result.pdfUrl) {
+                            // เปิด PDF ใน Browser ภายนอกเพื่อให้ดาวน์โหลดหรือพิมพ์ได้ง่าย
+                            liff.openWindow({
+                                url: result.pdfUrl,
+                                external: true
+                            });
                         }
-                        location.reload();
+                        // เด้งกลับเข้าหน้าแชท LINE ทันที
+                        liff.closeWindow();
                     });
                 } else {
                     throw new Error(result.message);
