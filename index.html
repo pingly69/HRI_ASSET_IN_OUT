@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Meta Tags ป้องกัน Cache ตามที่พี่ต้องการ -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    
     <title>Property Pass - บันทึกขออนุญาต</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -25,13 +27,13 @@
 
     <div class="loading-overlay" id="loadingOverlay">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 mb-4"></div>
-        <p class="text-lg font-semibold" id="loadingText">กำลังประมวลผล...</p>
+        <p class="text-lg font-semibold" id="loadingText">กำลังประมวลผลและสร้างไฟล์ PDF...</p>
     </div>
 
     <header class="bg-blue-700 text-white p-6 shadow-md mb-6">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-xl font-bold">ใบนำทรัพย์สินออก (Property Pass)</h1>
+                <h1 class="text-xl font-bold text-white">ใบนำทรัพย์สินออก (Property Pass)</h1>
                 <p class="text-xs opacity-70">ระบบลงทะเบียนขออนุญาตออนไลน์</p>
             </div>
             <div id="userProfile" class="flex items-center space-x-3">
@@ -42,15 +44,14 @@
 
     <main class="max-w-4xl mx-auto px-4">
         <form id="requestForm" onsubmit="event.preventDefault(); submitForm();">
-            <!-- ข้อมูลหลัก (Header) -->
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <h2 class="text-md font-bold border-b pb-2 mb-4 text-blue-800">1. ข้อมูลการเคลื่อนย้าย</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
                         <label class="block font-medium text-gray-600">ประเภท</label>
                         <select id="transType" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required>
-                            <option value="1">1. นำทรัพย์สินออกนอกพื้นที่</option>
-                            <option value="2">2. นำเข้าพื้นที่ (คืน)</option>
+                            <option value="1">1. นำทรัพย์สินออกนอกพื้นที่ (ถาวร)</option>
+                            <option value="2">2. นำออกและนำกลับคืน</option>
                         </select>
                     </div>
                     <div>
@@ -72,19 +73,18 @@
                         </div>
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block font-medium text-gray-600">วัตถุประสงค์การขนย้าย</label>
-                        <input type="text" id="purpose" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required>
-                    </div>
-                    <div class="md:col-span-2">
                         <label class="block font-medium text-gray-600 text-blue-600">ผู้อนุมัติ</label>
                         <select id="approverName" class="mt-1 block w-full rounded-md border-blue-300 p-2 border bg-blue-50" required>
                             <option value="">-- กำลังดึงรายชื่อผู้อนุมัติ... --</option>
                         </select>
                     </div>
+                    <div class="md:col-span-2">
+                        <label class="block font-medium text-gray-600">วัตถุประสงค์การขนย้าย</label>
+                        <textarea id="purpose" rows="2" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required></textarea>
+                    </div>
                 </div>
             </div>
 
-            <!-- รายละเอียดสิ่งของ (Detail) -->
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center border-b pb-2 mb-4">
                     <h2 class="text-md font-bold text-blue-800">2. รายการทรัพย์สิน</h2>
@@ -95,88 +95,67 @@
                 <div id="itemsContainer" class="space-y-4"></div>
             </div>
 
-            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all">
-                บันทึกใบขออนุมัติ
+            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all text-lg">
+                <i class="fas fa-save mr-2"></i> บันทึกข้อมูลและสร้างใบขออนุมัติ
             </button>
         </form>
     </main>
 
     <script>
-        // URL ของ GAS ที่พี่ปิงส่งมาล่าสุด
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxu_uZxnbSDM_Gs3Zh0vGUWzGVwp7r_evllWLrmnlZg8VaTr73GGYNzEtJZhWkd6R_X/exec';
         let lineUid = 'unknown_user';
 
         async function initLiff() {
             try {
-                // อัปเดต LIFF ID ตามที่พี่ปิงระบุ
                 await liff.init({ liffId: "2009016720-UeR6qqeG" });
-                
                 if (liff.isLoggedIn()) {
                     const profile = await liff.getProfile();
                     lineUid = profile.userId;
                     document.getElementById('reqName').value = profile.displayName || "";
-                    if (profile.pictureUrl) {
-                        document.getElementById('userImg').src = profile.pictureUrl;
-                    }
+                    if (profile.pictureUrl) document.getElementById('userImg').src = profile.pictureUrl;
                 } else {
                     liff.login();
                 }
-            } catch (err) { 
-                console.error('LIFF Init Error:', err); 
-                document.getElementById('reqName').placeholder = "ระบุชื่อผู้ขอ";
-            }
+            } catch (err) { console.error('LIFF Error:', err); }
         }
 
         async function fetchApprovers() {
             const select = document.getElementById('approverName');
             try {
-                // เพิ่ม cache: 'no-store' เพื่อป้องกันการดึงข้อมูลเก่าจาก Browser Cache
-                const res = await fetch(SCRIPT_URL, { cache: 'no-store' });
+                const res = await fetch(SCRIPT_URL);
                 const result = await res.json();
-                
                 if (result.status === 'success') {
-                    if (result.data && result.data.length > 0) {
-                        select.innerHTML = '<option value="">-- เลือกผู้อนุมัติ --</option>';
-                        result.data.forEach(name => {
-                            if(name) {
-                                const opt = document.createElement('option');
-                                opt.value = name; opt.innerText = name;
-                                select.appendChild(opt);
-                            }
-                        });
-                    } else {
-                        select.innerHTML = '<option value="">-- ไม่พบรายชื่อผู้อนุมัติในระบบ --</option>';
-                    }
-                } else {
-                    throw new Error(result.message || 'Unknown error');
+                    select.innerHTML = '<option value="">-- เลือกผู้อนุมัติ --</option>';
+                    result.data.forEach(name => {
+                        const opt = document.createElement('option');
+                        opt.value = name; opt.innerText = name;
+                        select.appendChild(opt);
+                    });
                 }
-            } catch (err) { 
-                console.error('Fetch Approvers Error:', err); 
-                select.innerHTML = '<option value="">-- โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่ --</option>';
-            }
+            } catch (err) { console.error('Fetch Error:', err); }
         }
 
         function addItem() {
             const id = 'item_' + Date.now();
             const html = `
                 <div id="${id}" class="item-card bg-gray-50 p-4 rounded-lg border relative border-gray-200">
-                    <button type="button" onclick="document.getElementById('${id}').remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs">×</button>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                    <button type="button" onclick="document.getElementById('${id}').remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs shadow-md">×</button>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
                         <div class="md:col-span-2">
-                            <label class="font-bold">รายละเอียดสิ่งของ</label>
-                            <input type="text" class="item-desc w-full p-2 border rounded mt-1" required>
+                            <label class="font-bold text-gray-700">รายละเอียดสิ่งของ</label>
+                            <input type="text" class="item-desc w-full p-2 border rounded mt-1 border-gray-300" required>
                         </div>
                         <div>
-                            <label class="font-bold">เจ้าของ</label>
-                            <input type="text" class="item-owner w-full p-2 border rounded mt-1" required>
+                            <label class="font-bold text-gray-700">เจ้าของ</label>
+                            <input type="text" class="item-owner w-full p-2 border rounded mt-1 border-gray-300" required>
                         </div>
                         <div>
-                            <label class="font-bold">จำนวน</label>
-                            <input type="number" class="item-qty w-full p-2 border rounded mt-1" required min="1">
+                            <label class="font-bold text-gray-700">จำนวน</label>
+                            <input type="number" class="item-qty w-full p-2 border rounded mt-1 border-gray-300" required min="1">
                         </div>
-                        <div class="md:col-span-4 flex items-center space-x-4">
+                        <div class="md:col-span-4 flex items-center space-x-4 pt-2">
                             <input type="file" class="item-img hidden" accept="image/*" capture="environment" id="file_${id}" onchange="handleImage(this, '${id}')">
-                            <label for="file_${id}" class="bg-gray-200 px-4 py-2 rounded border cursor-pointer hover:bg-gray-300">
+                            <label for="file_${id}" class="bg-gray-200 px-4 py-2 rounded border cursor-pointer hover:bg-gray-300 text-xs">
                                 <i class="fas fa-camera mr-1"></i> ถ่ายภาพ/แนบรูป
                             </label>
                             <div id="preview_${id}" class="hidden">
@@ -192,41 +171,28 @@
         async function handleImage(input, id) {
             const file = input.files[0];
             if (!file) return;
-            
             const previewDiv = document.getElementById('preview_' + id);
             const previewImg = previewDiv.querySelector('img');
-            
-            const compressedBase64 = await compressImage(file);
-            previewImg.src = compressedBase64;
-            previewDiv.classList.remove('hidden');
-            input.dataset.base64 = compressedBase64; 
-        }
-
-        function compressImage(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800; 
-                        let width = img.width;
-                        let height = img.height;
-
-                        if (width > height) {
-                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                        } else {
-                            if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; }
-                        }
-                        canvas.width = width; canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.7));
-                    };
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    let width = img.width, height = img.height;
+                    if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
+                    else { if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; } }
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const base64 = canvas.toDataURL('image/jpeg', 0.7);
+                    previewImg.src = base64;
+                    previewDiv.classList.remove('hidden');
+                    input.dataset.base64 = base64;
                 };
-            });
+            };
+            reader.readAsDataURL(file);
         }
 
         async function submitForm() {
@@ -246,12 +212,12 @@
                         carType: document.getElementById('carType').value,
                         purpose: document.getElementById('purpose').value,
                         approverName: document.getElementById('approverName').value,
-                        lineUid: lineUid 
+                        lineUid: lineUid
                     },
                     details: []
                 };
 
-                for (const item of items) {
+                items.forEach(item => {
                     const fileInput = item.querySelector('.item-img');
                     payload.details.push({
                         description: item.querySelector('.item-desc').value,
@@ -259,22 +225,26 @@
                         qty: item.querySelector('.item-qty').value,
                         imageData: fileInput.dataset.base64 || ''
                     });
-                }
-
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
                 });
-                
+
+                const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
 
                 if (result.status === 'success') {
                     Swal.fire({
                         icon: 'success',
-                        title: 'สำเร็จ',
+                        title: 'บันทึกสำเร็จ',
                         text: result.message,
-                        confirmButtonText: 'ตกลง'
-                    }).then(() => location.reload());
+                        showCancelButton: !!result.pdfUrl,
+                        confirmButtonText: 'ตกลง',
+                        cancelButtonText: 'เปิดดูไฟล์ PDF',
+                        cancelButtonColor: '#3085d6'
+                    }).then((res) => {
+                        if (res.dismiss === Swal.DismissReason.cancel && result.pdfUrl) {
+                            window.open(result.pdfUrl, '_blank');
+                        }
+                        location.reload();
+                    });
                 } else {
                     throw new Error(result.message);
                 }
@@ -285,12 +255,7 @@
             }
         }
 
-        // ปรับลำดับการทำงานเพื่อให้ User Experience ดีขึ้น
-        window.onload = () => { 
-            fetchApprovers(); // 1. ดึงรายชื่อผู้อนุมัติทันที
-            initLiff();      // 2. เริ่มต้น LIFF (เพื่อดึงโปรไฟล์)
-            addItem();       // 3. เพิ่มรายการแรก
-        };
+        window.onload = () => { fetchApprovers(); initLiff(); addItem(); };
     </script>
 </body>
 </html>
