@@ -31,8 +31,8 @@
     <header class="bg-blue-800 text-white p-6 shadow-md mb-6">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-xl font-bold">ใบนำทรัพย์สินออก (Property Pass)</h1>
-                <p class="text-xs opacity-75">Management System</p>
+                <h1 class="text-xl font-bold">ใบนำทรัพย์สินออก</h1>
+                <p class="text-xs opacity-75 text-blue-100">HRIENTEC Management System</p>
             </div>
             <div id="userProfile" class="flex items-center space-x-3">
                 <img id="userImg" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" src="https://via.placeholder.com/40">
@@ -48,13 +48,13 @@
                     <div>
                         <label class="block font-medium text-gray-600">ประเภท</label>
                         <select id="transType" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required>
-                            <option value="1">1. นำออกถาวร</option>
+                            <option value="1">1. นำทรัพย์สินออกนอกพื้นที่ (ถาวร)</option>
                             <option value="2">2. นำออกและนำกลับคืน</option>
                         </select>
                     </div>
                     <div>
                         <label class="block font-medium text-gray-600">ชื่อผู้ขอ</label>
-                        <input type="text" id="reqName" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required placeholder="ดึงข้อมูล Profile...">
+                        <input type="text" id="reqName" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required>
                     </div>
                     <div>
                         <label class="block font-medium text-gray-600">บริษัทผู้ขอ</label>
@@ -67,7 +67,7 @@
                         </div>
                         <div>
                             <label class="block font-medium text-gray-600">ประเภทรถ</label>
-                            <input type="text" id="carType" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required placeholder="เช่น รถกระบะ">
+                            <input type="text" id="carType" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required>
                         </div>
                     </div>
                     <div class="md:col-span-2">
@@ -86,15 +86,15 @@
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center border-b pb-2 mb-4">
                     <h2 class="text-md font-bold text-blue-800"><i class="fas fa-boxes mr-2"></i>2. รายการทรัพย์สิน</h2>
-                    <button type="button" onclick="addItem()" class="bg-blue-700 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-800 transition shadow-sm">
+                    <button type="button" onclick="addItem()" class="bg-blue-700 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-800 transition">
                         <i class="fas fa-plus mr-1"></i> เพิ่มรายการ
                     </button>
                 </div>
                 <div id="itemsContainer" class="space-y-4"></div>
             </div>
 
-            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all text-lg transform active:scale-95">
-                <i class="fas fa-save mr-2"></i> บันทึกใบขออนุมัติ
+            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all text-lg">
+                บันทึกและส่งเข้าแชท LINE
             </button>
         </form>
     </main>
@@ -112,6 +112,7 @@
                     document.getElementById('reqName').value = profile.displayName || "";
                     if (profile.pictureUrl) document.getElementById('userImg').src = profile.pictureUrl;
                 } else { liff.login(); }
+                fetchApprovers();
             } catch (err) { console.error('LIFF Error:', err); }
         }
 
@@ -128,17 +129,17 @@
                         select.appendChild(opt);
                     });
                 }
-            } catch (err) { console.error('Fetch Error:', err); }
+            } catch (err) { select.innerHTML = '<option value="">-- โหลดไม่สำเร็จ --</option>'; }
         }
 
         function addItem() {
             const id = 'item_' + Date.now();
             const html = `
-                <div id="${id}" class="item-card bg-gray-50 p-4 rounded-lg border border-gray-200 relative shadow-sm">
-                    <button type="button" onclick="document.getElementById('${id}').remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full text-sm shadow-md">×</button>
+                <div id="${id}" class="item-card bg-gray-50 p-4 rounded-lg border relative border-gray-200 shadow-sm">
+                    <button type="button" onclick="document.getElementById('${id}').remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full text-sm">×</button>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
                         <div class="md:col-span-2">
-                            <label class="font-bold text-gray-700 text-xs">รายละเอียด</label>
+                            <label class="font-bold text-gray-700 text-xs">รายละเอียดสิ่งของ</label>
                             <input type="text" class="item-desc w-full p-2 border rounded mt-1 border-gray-300" required>
                         </div>
                         <div>
@@ -151,12 +152,10 @@
                         </div>
                         <div class="md:col-span-4 flex items-center space-x-4 pt-2">
                             <input type="file" class="item-img hidden" accept="image/*" capture="environment" id="file_${id}" onchange="handleImage(this, '${id}')">
-                            <label for="file_${id}" class="bg-gray-200 px-4 py-2 rounded border cursor-pointer hover:bg-gray-300 text-xs font-semibold">
+                            <label for="file_${id}" class="bg-white border border-blue-300 text-blue-600 px-4 py-2 rounded cursor-pointer text-xs font-semibold">
                                 <i class="fas fa-camera mr-1"></i> ถ่ายภาพ
                             </label>
-                            <div id="preview_${id}" class="hidden">
-                                <img src="" class="h-16 w-16 object-cover rounded border-2 border-blue-500 shadow-sm">
-                            </div>
+                            <div id="preview_${id}" class="hidden"><img src="" class="h-16 w-16 object-cover rounded border-2 border-blue-500 shadow-sm"></div>
                         </div>
                     </div>
                 </div>
@@ -193,9 +192,9 @@
 
         async function submitForm() {
             const items = document.querySelectorAll('.item-card');
-            if (items.length === 0) return Swal.fire('เตือน', 'กรุณาเพิ่มรายการทรัพย์สิน', 'warning');
-
-            document.getElementById('loadingOverlay').style.display = 'flex';
+            if (items.length === 0) return Swal.fire('เตือน', 'กรุณาเพิ่มรายการสิ่งของ', 'warning');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.style.display = 'flex';
 
             try {
                 const payload = {
@@ -211,14 +210,12 @@
                     },
                     details: []
                 };
-
                 items.forEach(item => {
-                    const fileInput = item.querySelector('.item-img');
                     payload.details.push({
                         description: item.querySelector('.item-desc').value,
                         owner: item.querySelector('.item-owner').value,
                         qty: item.querySelector('.item-qty').value,
-                        imageData: fileInput.dataset.base64 || ''
+                        imageData: item.querySelector('.item-img').dataset.base64 || ''
                     });
                 });
 
@@ -226,30 +223,31 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
+                    // ส่งข้อความเข้าแชท LINE
+                    if (liff.isInClient()) {
+                        await liff.sendMessages([{
+                            type: 'text',
+                            text: `📝 บันทึกใบขออนุญาตนำทรัพย์สินออกเรียบร้อยแล้ว\n🔹 เลขที่: ${result.docno}\n🔹 ผู้ขอ: ${payload.header.reqName}\n📄 ดูรายละเอียด PDF: ${result.pdfUrl}`
+                        }]);
+                    }
+                    
                     Swal.fire({
                         icon: 'success',
                         title: 'บันทึกสำเร็จ',
-                        html: `เลขที่ใบขออนุญาต: <b>${result.docno}</b>`,
-                        confirmButtonText: '<i class="fas fa-file-pdf mr-1"></i> เปิดดูใบคำขอ (PDF)',
-                        showCancelButton: true,
-                        cancelButtonText: 'ปิดหน้าต่าง',
-                        confirmButtonColor: '#1d4ed8',
-                        cancelButtonColor: '#6b7280',
-                    }).then((res) => {
-                        if (res.isConfirmed && result.pdfUrl) {
-                            liff.openWindow({ url: result.pdfUrl, external: true });
-                        }
+                        text: 'ระบบส่งลิงก์ใบคำขอเข้าแชท LINE ของคุณแล้ว',
+                        confirmButtonText: 'ตกลง'
+                    }).then(() => {
                         liff.closeWindow();
                     });
                 } else { throw new Error(result.message); }
             } catch (err) {
                 Swal.fire('ล้มเหลว', err.message, 'error');
             } finally {
-                document.getElementById('loadingOverlay').style.display = 'none';
+                loadingOverlay.style.display = 'none';
             }
         }
 
-        window.onload = () => { fetchApprovers(); initLiff(); addItem(); };
+        window.onload = initLiff;
     </script>
 </body>
 </html>
