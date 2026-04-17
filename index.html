@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Meta Tags ป้องกัน Cache ตามที่พี่ต้องการ -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -33,7 +32,7 @@
     <header class="bg-blue-700 text-white p-6 shadow-md mb-6">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-xl font-bold text-white">ใบนำทรัพย์สินออก (Property Pass)</h1>
+                <h1 class="text-xl font-bold">ใบนำทรัพย์สินออก (Property Pass)</h1>
                 <p class="text-xs opacity-70">ระบบลงทะเบียนขออนุญาตออนไลน์</p>
             </div>
             <div id="userProfile" class="flex items-center space-x-3">
@@ -44,6 +43,7 @@
 
     <main class="max-w-4xl mx-auto px-4">
         <form id="requestForm" onsubmit="event.preventDefault(); submitForm();">
+            <!-- Section 1 -->
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <h2 class="text-md font-bold border-b pb-2 mb-4 text-blue-800">1. ข้อมูลการเคลื่อนย้าย</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -56,7 +56,7 @@
                     </div>
                     <div>
                         <label class="block font-medium text-gray-600">ชื่อผู้ขอ</label>
-                        <input type="text" id="reqName" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required placeholder="กำลังดึงโปรไฟล์ LINE...">
+                        <input type="text" id="reqName" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required>
                     </div>
                     <div>
                         <label class="block font-medium text-gray-600">บริษัทผู้ขอ</label>
@@ -85,6 +85,7 @@
                 </div>
             </div>
 
+            <!-- Section 2 -->
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center border-b pb-2 mb-4">
                     <h2 class="text-md font-bold text-blue-800">2. รายการทรัพย์สิน</h2>
@@ -113,9 +114,7 @@
                     lineUid = profile.userId;
                     document.getElementById('reqName').value = profile.displayName || "";
                     if (profile.pictureUrl) document.getElementById('userImg').src = profile.pictureUrl;
-                } else {
-                    liff.login();
-                }
+                } else { liff.login(); }
             } catch (err) { console.error('LIFF Error:', err); }
         }
 
@@ -145,9 +144,8 @@
                             <label class="font-bold text-gray-700">รายละเอียดสิ่งของ</label>
                             <input type="text" class="item-desc w-full p-2 border rounded mt-1 border-gray-300" required>
                         </div>
-                        <div>
-                            <label class="font-bold text-gray-700">เจ้าของ</label>
-                            <input type="text" class="item-owner w-full p-2 border rounded mt-1 border-gray-300" required>
+                        <div class="hidden">
+                            <input type="hidden" class="item-owner w-full" value="-">
                         </div>
                         <div>
                             <label class="font-bold text-gray-700">จำนวน</label>
@@ -221,7 +219,7 @@
                     const fileInput = item.querySelector('.item-img');
                     payload.details.push({
                         description: item.querySelector('.item-desc').value,
-                        owner: item.querySelector('.item-owner').value,
+                        owner: '-',
                         qty: item.querySelector('.item-qty').value,
                         imageData: fileInput.dataset.base64 || ''
                     });
@@ -231,31 +229,22 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    // ปรับปรุงส่วนแจ้งเตือนหลังบันทึกสำเร็จ
                     Swal.fire({
                         icon: 'success',
                         title: 'บันทึกสำเร็จ',
                         html: `เลขที่เอกสาร: <b>${result.docno}</b><br><br>ระบบสร้างใบคำขอเรียบร้อยแล้ว`,
-                        showConfirmButton: !!result.pdfUrl,
                         confirmButtonText: '<i class="fas fa-file-pdf mr-1"></i> เปิดดูใบคำขอ (PDF)',
                         showCancelButton: true,
-                        cancelButtonText: 'ปิด',
+                        cancelButtonText: 'กลับสู่ LINE',
                         confirmButtonColor: '#3085d6',
                         cancelButtonColor: '#6e7881',
                     }).then((res) => {
                         if (res.isConfirmed && result.pdfUrl) {
-                            // เปิด PDF ใน Browser ภายนอกเพื่อให้ดาวน์โหลดหรือพิมพ์ได้ง่าย
-                            liff.openWindow({
-                                url: result.pdfUrl,
-                                external: true
-                            });
+                            liff.openWindow({ url: result.pdfUrl, external: true });
                         }
-                        // เด้งกลับเข้าหน้าแชท LINE ทันที
                         liff.closeWindow();
                     });
-                } else {
-                    throw new Error(result.message);
-                }
+                } else { throw new Error(result.message); }
             } catch (err) {
                 Swal.fire('ล้มเหลว', err.message, 'error');
             } finally {
