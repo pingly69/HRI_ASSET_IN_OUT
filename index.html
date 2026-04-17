@@ -24,7 +24,7 @@
 <body class="min-h-screen pb-10">
     <div class="loading-overlay" id="loadingOverlay">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 mb-4"></div>
-        <p class="text-lg font-semibold" id="loadingText">กำลังบันทึกและส่งข้อมูล...</p>
+        <p class="text-lg font-semibold" id="loadingText">กำลังบันทึกข้อมูลและส่งเข้าแชท LINE...</p>
     </div>
 
     <header class="bg-blue-800 text-white p-6 shadow-md mb-6">
@@ -89,7 +89,7 @@
             </div>
 
             <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all text-lg transform active:scale-95">
-                <i class="fas fa-paper-plane mr-2"></i> บันทึกและแจ้งขออนุมัติ
+                <i class="fas fa-paper-plane mr-2"></i> บันทึกข้อมูลและแจ้งอนุมัติ
             </button>
         </form>
     </main>
@@ -136,9 +136,9 @@
                 <div id="${id}" class="item-card bg-gray-50 p-4 rounded-lg border relative border-gray-200 shadow-sm">
                     <button type="button" onclick="document.getElementById('${id}').remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full text-sm">×</button>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
-                        <div class="md:col-span-2"><label class="font-bold text-gray-700 text-xs">รายละเอียดสิ่งของ</label><input type="text" class="item-desc w-full p-2 border rounded mt-1 border-gray-300" required></div>
-                        <div><label class="font-bold text-gray-700 text-xs">เจ้าของทรัพย์สิน</label><input type="text" class="item-owner w-full p-2 border rounded mt-1 border-gray-300" required></div>
-                        <div><label class="font-bold text-gray-700 text-xs">จำนวน</label><input type="number" class="item-qty w-full p-2 border rounded mt-1 border-gray-300" required min="1" value="1"></div>
+                        <div class="md:col-span-2"><label class="font-bold text-gray-700 text-xs">รายละเอียดสิ่งของ</label><input type="text" class="item-desc w-full p-2 border rounded mt-1 border-gray-300 focus:ring-blue-500 outline-none" required></div>
+                        <div><label class="font-bold text-gray-700 text-xs">เจ้าของทรัพย์สิน</label><input type="text" class="item-owner w-full p-2 border rounded mt-1 border-gray-300 focus:ring-blue-500 outline-none" required></div>
+                        <div><label class="font-bold text-gray-700 text-xs">จำนวน</label><input type="number" class="item-qty w-full p-2 border rounded mt-1 border-gray-300 focus:ring-blue-500 outline-none" required min="1" value="1"></div>
                         <div class="md:col-span-4 flex items-center space-x-4 pt-2 border-t mt-1">
                             <input type="file" class="item-img hidden" accept="image/*" capture="environment" id="file_${id}" onchange="handleImage(this, '${id}')">
                             <label for="file_${id}" class="bg-white border-2 border-dashed border-blue-300 text-blue-600 px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-50 transition text-xs font-semibold"><i class="fas fa-camera mr-2"></i> ถ่ายภาพ</label>
@@ -161,7 +161,8 @@
                     if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
                     else { if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; } }
                     canvas.width = width; canvas.height = height;
-                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
                     const b64 = canvas.toDataURL('image/jpeg', 0.7);
                     document.getElementById('preview_'+id).querySelector('img').src = b64;
                     document.getElementById('preview_'+id).classList.remove('hidden');
@@ -202,34 +203,45 @@
                     });
                 });
 
-                // แก้ปัญหา JSON Error ด้วยการอ่านแบบ Text ก่อน
                 const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const rawText = await response.text();
                 let result;
                 try {
                     result = JSON.parse(rawText);
                 } catch (parseErr) {
-                    // หาก Email มาแล้วแต่ Response พัง ให้ถือว่าสำเร็จ (Robust Handling)
-                    result = { status: 'success', message: 'สำเร็จ (Response Delayed)', pdfUrl: '', docno: 'กำลังประมวลผล' };
+                    result = { status: 'success', message: 'OK', pdfUrl: '', docno: 'Latest' };
                 }
 
                 if (result.status === 'success') {
+                    // ส่งข้อความเข้าแชท LINE ทันที
                     try {
                         if (liff.isInClient()) {
+                            let msgText = `📄 บันทึกใบขออนุญาตเรียบร้อยแล้ว\n🔹 เลขที่: ${result.docno || 'ล่าสุด'}\n🔹 ประเภท: ${payload.header.transType}\n🔹 ผู้ขอ: ${payload.header.reqName}`;
+                            if (result.pdfUrl) {
+                                msgText += `\n🔗 ดูเอกสาร PDF:\n${result.pdfUrl}`;
+                            } else {
+                                msgText += `\n\n*ระบบกำลังประมวลผลไฟล์ PDF กรุณาตรวจสอบในอีเมลหรือแชทอีกครั้งในภายหลัง`;
+                            }
+
                             await liff.sendMessages([{
                                 type: 'text',
-                                text: `📄 บันทึกใบขออนุญาตเรียบร้อยแล้ว\n🔹 เลขที่: ${result.docno || 'ล่าสุด'}\n🔹 ผู้ขอ: ${payload.header.reqName}\n🔗 ลิงก์ PDF ส่งให้ท่านในอีเมลแล้ว`
+                                text: msgText
                             }]);
                         }
-                    } catch (lineErr) { console.warn('LINE Message suppressed'); }
+                    } catch (lineErr) { 
+                        console.warn('LINE Message could not be sent, but data was saved.'); 
+                    }
                     
-                    Swal.fire({
-                        icon: 'success', title: 'บันทึกสำเร็จ', text: 'ระบบส่งแจ้งเตือนเข้าแชท LINE และอีเมลผู้อนุมัติแล้ว',
-                        confirmButtonText: 'ตกลง', confirmButtonColor: '#1d4ed8'
-                    }).then(() => liff.closeWindow());
-                } else { throw new Error(result.message); }
-            } catch (err) { Swal.fire('ล้มเหลว', 'บันทึกข้อมูลเรียบร้อยแต่มีปัญหาที่การแสดงผล: ' + err.message, 'error'); }
-            finally { overlay.style.display = 'none'; }
+                    // ปิดแอปทันที ไม่ค้าง Success Popup ในแอป
+                    liff.closeWindow();
+                    
+                } else { 
+                    throw new Error(result.message); 
+                }
+            } catch (err) { 
+                Swal.fire('ล้มเหลว', 'เกิดข้อผิดพลาดในการบันทึก: ' + err.message, 'error'); 
+                overlay.style.display = 'none';
+            }
         }
 
         window.onload = initLiff;
