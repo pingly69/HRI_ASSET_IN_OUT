@@ -139,6 +139,13 @@
         }
 
         function addItem() {
+            
+            const currentItems = document.querySelectorAll('.item-card').length;
+            if (currentItems >= 10) { // กำหนด Limit ตรงนี้
+                  Swal.fire('แจ้งเตือน', 'จำกัดไม่เกิน 15 รายการต่อใบคำขอ', 'warning');
+                  return;
+            }
+
             const id = 'item_' + Date.now();
             const html = `
                 <div id="${id}" class="item-card bg-gray-50 p-4 rounded-lg border relative border-gray-200 shadow-sm">
