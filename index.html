@@ -235,7 +235,7 @@
                     if (liff.isInClient()) {
                         await liff.sendMessages([{
                             type: 'text',
-                            text: `📄 บันทึกใบขออนุญาตเรียบร้อยแล้ว\n🔹 เลขที่: ${result.docno}\n🔹 ประเภท: ${payload.header.transType == '1' ? 'นำออก' : 'นำเข้า'}\n🔹 ผู้ขอ: ${payload.header.reqName}\n\n🔗 ดูเอกสาร PDF:\n${result.pdfUrl}`
+                            text: `📄 บันทึกใบผ่านเรียบร้อยแล้ว\n🔹 เลขที่: ${result.docno}\n🔹 ประเภท: ${payload.header.transType == '1' ? 'นำออก' : 'นำเข้า'}\n🔹 ผู้ขอ: ${payload.header.reqName}\n\n🔗 ดูเอกสาร PDF:\n${result.pdfUrl}`
                         }]);
                     }
                     
