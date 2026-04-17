@@ -13,26 +13,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
-        body { font-family: 'Sarabun', sans-serif; }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
         .loading-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.75); z-index: 9999; justify-content: center; align-items: center;
             color: white; flex-direction: column;
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen pb-10">
+<body class="min-h-screen pb-10">
 
     <div class="loading-overlay" id="loadingOverlay">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 mb-4"></div>
-        <p class="text-lg font-semibold" id="loadingText">กำลังบันทึกและสร้างใบคำขอ...</p>
+        <p class="text-lg font-semibold" id="loadingText">กำลังบันทึกข้อมูลและสร้างใบคำขอ...</p>
     </div>
 
     <header class="bg-blue-800 text-white p-6 shadow-md mb-6">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-xl font-bold">ใบนำทรัพย์สินออก</h1>
-                <p class="text-xs opacity-75 text-blue-100">HRI ENTEC Asset movement</p>
+                <h1 class="text-xl font-bold uppercase tracking-wide">ใบผ่านย้ายสิ่งของออกนอกพื้นที่</h1>
+                <p class="text-xs opacity-75 text-blue-100 italic">HRI ENTEC Asset Movement System</p>
             </div>
             <div id="userProfile" class="flex items-center space-x-3">
                 <img id="userImg" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" src="https://via.placeholder.com/40">
@@ -42,12 +42,15 @@
 
     <main class="max-w-4xl mx-auto px-4">
         <form id="requestForm" onsubmit="event.preventDefault(); submitForm();">
-            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-                <h2 class="text-md font-bold border-b pb-2 mb-4 text-blue-800"><i class="fas fa-info-circle mr-2"></i>1. ข้อมูลหลัก</h2>
+            <!-- ส่วนที่ 1: ข้อมูลหลัก -->
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
+                <h2 class="text-md font-bold border-b pb-2 mb-4 text-blue-800 flex items-center">
+                    <i class="fas fa-info-circle mr-2"></i>1. ข้อมูลการเคลื่อนย้าย
+                </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
-                        <label class="block font-medium text-gray-600">ประเภท</label>
-                        <select id="transType" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required>
+                        <label class="block font-medium text-gray-600">ประเภทการขนย้าย</label>
+                        <select id="transType" class="mt-1 block w-full rounded-md border-gray-300 p-2 border focus:ring-blue-500 outline-none" required>
                             <option value="1">1. นำทรัพย์สินออกนอกพื้นที่</option>
                             <option value="2">2. นำทรัพสินเข้าพื้นที่</option>
                         </select>
@@ -63,17 +66,17 @@
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block font-medium text-gray-600">ทะเบียนรถ</label>
-                            <input type="text" id="carNo" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required>
+                            <input type="text" id="carNo" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required placeholder="กข 1234">
                         </div>
                         <div>
                             <label class="block font-medium text-gray-600">ประเภทรถ</label>
-                            <input type="text" id="carType" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required>
+                            <input type="text" id="carType" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required placeholder="เช่น รถกระบะ">
                         </div>
                     </div>
                     <div class="md:col-span-2">
                         <label class="block font-medium text-gray-600 text-blue-700 font-bold">ผู้อนุมัติ</label>
                         <select id="approverName" class="mt-1 block w-full rounded-md border-blue-300 p-2 border bg-blue-50" required>
-                            <option value="">-- กำลังโหลดรายชื่อ... --</option>
+                            <option value="">-- กำลังดึงรายชื่อผู้อนุมัติ... --</option>
                         </select>
                     </div>
                     <div class="md:col-span-2">
@@ -83,18 +86,21 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <!-- ส่วนที่ 2: รายการทรัพย์สิน -->
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
                 <div class="flex justify-between items-center border-b pb-2 mb-4">
-                    <h2 class="text-md font-bold text-blue-800"><i class="fas fa-boxes mr-2"></i>2. รายการทรัพย์สิน</h2>
-                    <button type="button" onclick="addItem()" class="bg-blue-700 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-800 transition">
+                    <h2 class="text-md font-bold text-blue-800 flex items-center">
+                        <i class="fas fa-boxes mr-2"></i>2. รายการทรัพย์สิน
+                    </h2>
+                    <button type="button" onclick="addItem()" class="bg-blue-700 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-800 transition shadow-sm">
                         <i class="fas fa-plus mr-1"></i> เพิ่มรายการ
                     </button>
                 </div>
                 <div id="itemsContainer" class="space-y-4"></div>
             </div>
 
-            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all text-lg">
-                บันทึกและส่งเข้าแชท LINE
+            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all text-lg transform active:scale-95">
+                <i class="fas fa-paper-plane mr-2"></i> บันทึกและส่งเข้าแชท LINE
             </button>
         </form>
     </main>
@@ -129,14 +135,14 @@
                         select.appendChild(opt);
                     });
                 }
-            } catch (err) { select.innerHTML = '<option value="">-- โหลดไม่สำเร็จ --</option>'; }
+            } catch (err) { select.innerHTML = '<option value="">-- โหลดข้อมูลไม่สำเร็จ --</option>'; }
         }
 
         function addItem() {
             const id = 'item_' + Date.now();
             const html = `
                 <div id="${id}" class="item-card bg-gray-50 p-4 rounded-lg border relative border-gray-200 shadow-sm">
-                    <button type="button" onclick="document.getElementById('${id}').remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full text-sm">×</button>
+                    <button type="button" onclick="document.getElementById('${id}').remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full text-xs shadow-md">×</button>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
                         <div class="md:col-span-2">
                             <label class="font-bold text-gray-700 text-xs">รายละเอียดสิ่งของ</label>
@@ -150,10 +156,10 @@
                             <label class="font-bold text-gray-700 text-xs">จำนวน</label>
                             <input type="number" class="item-qty w-full p-2 border rounded mt-1 border-gray-300" required min="1" value="1">
                         </div>
-                        <div class="md:col-span-4 flex items-center space-x-4 pt-2">
+                        <div class="md:col-span-4 flex items-center space-x-4 pt-2 border-t mt-1">
                             <input type="file" class="item-img hidden" accept="image/*" capture="environment" id="file_${id}" onchange="handleImage(this, '${id}')">
-                            <label for="file_${id}" class="bg-white border border-blue-300 text-blue-600 px-4 py-2 rounded cursor-pointer text-xs font-semibold">
-                                <i class="fas fa-camera mr-1"></i> ถ่ายภาพ
+                            <label for="file_${id}" class="bg-white border-2 border-dashed border-blue-300 text-blue-600 px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-50 transition text-xs font-semibold">
+                                <i class="fas fa-camera mr-2"></i> ถ่ายภาพ/แนบรูป
                             </label>
                             <div id="preview_${id}" class="hidden"><img src="" class="h-16 w-16 object-cover rounded border-2 border-blue-500 shadow-sm"></div>
                         </div>
@@ -192,9 +198,9 @@
 
         async function submitForm() {
             const items = document.querySelectorAll('.item-card');
-            if (items.length === 0) return Swal.fire('เตือน', 'กรุณาเพิ่มรายการสิ่งของ', 'warning');
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            loadingOverlay.style.display = 'flex';
+            if (items.length === 0) return Swal.fire('แจ้งเตือน', 'กรุณาเพิ่มรายการอย่างน้อย 1 รายการ', 'warning');
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = 'flex';
 
             try {
                 const payload = {
@@ -210,12 +216,14 @@
                     },
                     details: []
                 };
+
                 items.forEach(item => {
+                    const fileInput = item.querySelector('.item-img');
                     payload.details.push({
                         description: item.querySelector('.item-desc').value,
                         owner: item.querySelector('.item-owner').value,
                         qty: item.querySelector('.item-qty').value,
-                        imageData: item.querySelector('.item-img').dataset.base64 || ''
+                        imageData: fileInput.dataset.base64 || ''
                     });
                 });
 
@@ -223,27 +231,28 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    // ส่งข้อความเข้าแชท LINE
+                    // ส่งข้อความกลับเข้าแชท LINE เพื่อให้ User มีลิงก์ดูย้อนหลัง
                     if (liff.isInClient()) {
                         await liff.sendMessages([{
                             type: 'text',
-                            text: `📝 บันทึกใบขออนุญาตนำทรัพย์สินออกเรียบร้อยแล้ว\n🔹 เลขที่: ${result.docno}\n🔹 ผู้ขอ: ${payload.header.reqName}\n📄 ดูรายละเอียด PDF: ${result.pdfUrl}`
+                            text: `📄 บันทึกใบขออนุญาตเรียบร้อยแล้ว\n🔹 เลขที่: ${result.docno}\n🔹 ประเภท: ${payload.header.transType == '1' ? 'นำออก' : 'นำเข้า'}\n🔹 ผู้ขอ: ${payload.header.reqName}\n\n🔗 ดูเอกสาร PDF:\n${result.pdfUrl}`
                         }]);
                     }
                     
                     Swal.fire({
                         icon: 'success',
                         title: 'บันทึกสำเร็จ',
-                        text: 'ระบบส่งลิงก์ใบคำขอเข้าแชท LINE ของคุณแล้ว',
-                        confirmButtonText: 'ตกลง'
+                        text: 'ลิงก์ใบคำขอถูกส่งเข้าแชท LINE ของคุณแล้ว',
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: '#1d4ed8'
                     }).then(() => {
                         liff.closeWindow();
                     });
                 } else { throw new Error(result.message); }
             } catch (err) {
-                Swal.fire('ล้มเหลว', err.message, 'error');
+                Swal.fire('ล้มเหลว', 'เกิดข้อผิดพลาด: ' + err.message, 'error');
             } finally {
-                loadingOverlay.style.display = 'none';
+                overlay.style.display = 'none';
             }
         }
 
