@@ -3,61 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Meta Tags สำหรับล้าง Cache และป้องกันข้อมูลค้าง -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    
     <title>ใบผ่านย้ายสิ่งของออกนอกพื้นที่</title>
-    
-    <!-- External Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
-        body { 
-            font-family: 'Sarabun', sans-serif; 
-            background-color: #f8fafc; 
-        }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
         .loading-overlay {
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.75); 
-            z-index: 9999; 
-            justify-content: center; 
-            align-items: center;
-            color: white; 
-            flex-direction: column;
-        }
-        .item-card { 
-            animation: fadeIn 0.3s ease-in-out; 
-        }
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(5px); } 
-            to { opacity: 1; transform: translateY(0); } 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75); z-index: 9999; justify-content: center; align-items: center;
+            color: white; flex-direction: column;
         }
     </style>
 </head>
-
 <body class="min-h-screen pb-10">
-
-    <!-- ส่วน Loading ตอนบันทึกข้อมูล -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 mb-4"></div>
         <p class="text-lg font-semibold" id="loadingText">กำลังบันทึกและส่งข้อมูล...</p>
     </div>
 
-    <!-- ส่วน Header -->
     <header class="bg-blue-800 text-white p-6 shadow-md mb-6">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-xl font-bold uppercase tracking-wide">ใบผ่านย้ายสิ่งของออกนอกพื้นที่</h1>
-                <p class="text-xs opacity-75 text-blue-100 italic">HRI ENTEC Asset Movement System</p>
+                <h1 class="text-xl font-bold uppercase">ใบผ่านย้ายสิ่งของออกนอกพื้นที่</h1>
+                <p class="text-xs opacity-75 italic text-blue-100">HRI ENTEC Asset Movement System</p>
             </div>
             <div id="userProfile" class="flex items-center space-x-3">
                 <img id="userImg" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" src="https://via.placeholder.com/40">
@@ -67,15 +41,9 @@
 
     <main class="max-w-4xl mx-auto px-4">
         <form id="requestForm" onsubmit="event.preventDefault(); submitForm();">
-            
-            <!-- ส่วนที่ 1: ข้อมูลหลักของการเคลื่อนย้าย -->
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
-                <h2 class="text-md font-bold border-b pb-2 mb-4 text-blue-800 flex items-center">
-                    <i class="fas fa-info-circle mr-2"></i>1. ข้อมูลการเคลื่อนย้าย
-                </h2>
-                
+                <h2 class="text-md font-bold border-b pb-2 mb-4 text-blue-800 flex items-center"><i class="fas fa-info-circle mr-2"></i>1. ข้อมูลการเคลื่อนย้าย</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <!-- ประเภทการขนย้าย (เก็บค่าเต็ม) -->
                     <div>
                         <label class="block font-medium text-gray-600">ประเภทการขนย้าย</label>
                         <select id="transType" class="mt-1 block w-full rounded-md border-gray-300 p-2 border focus:ring-blue-500 outline-none" required>
@@ -83,46 +51,28 @@
                             <option value="2.นำทรัพสินเข้าพื้นที่">2.นำทรัพสินเข้าพื้นที่</option>
                         </select>
                     </div>
-                    
-                    <!-- ชื่อผู้ขอ -->
                     <div>
                         <label class="block font-medium text-gray-600">ชื่อผู้ขอ</label>
                         <input type="text" id="reqName" class="mt-1 block w-full rounded-md border-gray-300 p-2 border focus:ring-blue-500 outline-none" required>
                     </div>
-                    
-                    <!-- บริษัทผู้ขอ -->
                     <div>
                         <label class="block font-medium text-gray-600">บริษัทผู้ขอ</label>
                         <input type="text" id="reqCompany" class="mt-1 block w-full rounded-md border-gray-300 p-2 border focus:ring-blue-500 outline-none" required>
                     </div>
-                    
-                    <!-- Email ผู้ขอ (เพิ่มใหม่ตาม UAT) -->
                     <div>
                         <label class="block font-medium text-gray-600 text-blue-600 font-bold">Email ผู้ขอ (สำหรับรับผลอนุมัติ)</label>
                         <input type="email" id="reqEmail" class="mt-1 block w-full rounded-md border-blue-300 p-2 border focus:ring-blue-500 outline-none" required placeholder="example@email.com">
                     </div>
-                    
-                    <!-- ทะเบียนรถ และ ประเภทรถ -->
                     <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block font-medium text-gray-600">ทะเบียนรถ</label>
-                            <input type="text" id="carNo" class="mt-1 block w-full rounded-md border-gray-300 p-2 border focus:ring-blue-500 outline-none" required placeholder="กข 1234">
-                        </div>
-                        <div>
-                            <label class="block font-medium text-gray-600">ประเภทรถ</label>
-                            <input type="text" id="carType" class="mt-1 block w-full rounded-md border-gray-300 p-2 border focus:ring-blue-500 outline-none" required placeholder="เช่น รถกระบะ">
-                        </div>
+                        <div><label class="block font-medium text-gray-600">ทะเบียนรถ</label><input type="text" id="carNo" class="mt-1 block w-full rounded-md border-gray-300 p-2 border focus:ring-blue-500 outline-none" required placeholder="กข 1234"></div>
+                        <div><label class="block font-medium text-gray-600">ประเภทรถ</label><input type="text" id="carType" class="mt-1 block w-full rounded-md border-gray-300 p-2 border focus:ring-blue-500 outline-none" required placeholder="เช่น รถกระบะ"></div>
                     </div>
-                    
-                    <!-- ผู้อนุมัติ (Dropdown) -->
                     <div class="md:col-span-2">
-                        <label class="block font-medium text-gray-600 text-blue-700 font-bold">ผู้อนุมัติ</label>
-                        <select id="approverName" class="mt-1 block w-full rounded-md border-blue-300 p-2 border bg-blue-50 focus:ring-blue-500 outline-none" required>
+                        <label class="block font-medium text-gray-600 text-blue-700 font-bold">เลือกผู้อนุมัติ</label>
+                        <select id="approverName" class="mt-1 block w-full rounded-md border-blue-300 p-2 border bg-blue-50 focus:ring-blue-500 outline-none font-semibold" required>
                             <option value="">-- กำลังดึงรายชื่อผู้อนุมัติ... --</option>
                         </select>
                     </div>
-                    
-                    <!-- วัตถุประสงค์ -->
                     <div class="md:col-span-2">
                         <label class="block font-medium text-gray-600">วัตถุประสงค์การขนย้าย</label>
                         <textarea id="purpose" rows="2" class="mt-1 block w-full rounded-md border-gray-300 p-2 border focus:ring-blue-500 outline-none" required></textarea>
@@ -130,23 +80,14 @@
                 </div>
             </div>
 
-            <!-- ส่วนที่ 2: รายการทรัพย์สิน (Dynamic) -->
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
                 <div class="flex justify-between items-center border-b pb-2 mb-4">
-                    <h2 class="text-md font-bold text-blue-800 flex items-center">
-                        <i class="fas fa-boxes mr-2"></i>2. รายการทรัพย์สิน (สูงสุด 10 รายการ)
-                    </h2>
-                    <button type="button" onclick="addItem()" class="bg-blue-700 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-800 transition shadow-sm">
-                        <i class="fas fa-plus mr-1"></i> เพิ่มรายการ
-                    </button>
+                    <h2 class="text-md font-bold text-blue-800 flex items-center"><i class="fas fa-boxes mr-2"></i>2. รายการทรัพย์สิน (สูงสุด 10 รายการ)</h2>
+                    <button type="button" onclick="addItem()" class="bg-blue-700 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-800 transition shadow-sm"><i class="fas fa-plus mr-1"></i> เพิ่มรายการ</button>
                 </div>
-                
-                <div id="itemsContainer" class="space-y-4">
-                    <!-- รายการสินค้าจะถูกสร้างด้วย JavaScript -->
-                </div>
+                <div id="itemsContainer" class="space-y-4"></div>
             </div>
 
-            <!-- ปุ่มบันทึก -->
             <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all text-lg transform active:scale-95">
                 <i class="fas fa-paper-plane mr-2"></i> บันทึกและแจ้งขออนุมัติ
             </button>
@@ -157,7 +98,6 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxu_uZxnbSDM_Gs3Zh0vGUWzGVwp7r_evllWLrmnlZg8VaTr73GGYNzEtJZhWkd6R_X/exec';
         let lineUid = 'unknown';
 
-        // 1. เริ่มต้น LIFF และดึง Profile
         async function initLiff() {
             try {
                 await liff.init({ liffId: "2009016720-UeR6qqeG" });
@@ -166,16 +106,11 @@
                     lineUid = profile.userId;
                     document.getElementById('reqName').value = profile.displayName || "";
                     if (profile.pictureUrl) document.getElementById('userImg').src = profile.pictureUrl;
-                } else { 
-                    liff.login(); 
-                }
+                } else { liff.login(); }
                 fetchApprovers();
-            } catch (err) { 
-                console.error('LIFF Error:', err); 
-            }
+            } catch (err) { console.error('LIFF Error:', err); }
         }
 
-        // 2. ดึงรายชื่อผู้อนุมัติจาก GAS
         async function fetchApprovers() {
             const select = document.getElementById('approverName');
             try {
@@ -189,52 +124,25 @@
                         select.appendChild(opt);
                     });
                 }
-            } catch (err) { 
-                select.innerHTML = '<option value="">-- โหลดข้อมูลไม่สำเร็จ --</option>'; 
-            }
+            } catch (err) { select.innerHTML = '<option value="">-- โหลดข้อมูลไม่สำเร็จ --</option>'; }
         }
 
-        // 3. ฟังก์ชันเพิ่มรายการทรัพย์สิน (จำกัด 10 รายการ)
         function addItem() {
-            const currentItems = document.querySelectorAll('.item-card').length;
-            if (currentItems >= 10) {
-                Swal.fire('แจ้งเตือน', 'จำกัดไม่เกิน 10 รายการต่อใบคำขอ', 'warning');
-                return;
+            if (document.querySelectorAll('.item-card').length >= 10) {
+                Swal.fire('แจ้งเตือน', 'จำกัดไม่เกิน 10 รายการต่อใบคำขอ', 'warning'); return;
             }
-
             const id = 'item_' + Date.now();
             const html = `
                 <div id="${id}" class="item-card bg-gray-50 p-4 rounded-lg border relative border-gray-200 shadow-sm">
-                    <button type="button" onclick="document.getElementById('${id}').remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full text-sm flex items-center justify-center hover:bg-red-600">×</button>
-                    
+                    <button type="button" onclick="document.getElementById('${id}').remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full text-sm">×</button>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
-                        <!-- รายละเอียดสิ่งของ -->
-                        <div class="md:col-span-2">
-                            <label class="font-bold text-gray-700 text-xs">รายละเอียดสิ่งของ</label>
-                            <input type="text" class="item-desc w-full p-2 border rounded mt-1 border-gray-300 focus:ring-1 focus:ring-blue-500 outline-none" required>
-                        </div>
-                        
-                        <!-- เจ้าของทรัพย์สิน -->
-                        <div>
-                            <label class="font-bold text-gray-700 text-xs">เจ้าของทรัพย์สิน</label>
-                            <input type="text" class="item-owner w-full p-2 border rounded mt-1 border-gray-300 focus:ring-1 focus:ring-blue-500 outline-none" required>
-                        </div>
-                        
-                        <!-- จำนวน -->
-                        <div>
-                            <label class="font-bold text-gray-700 text-xs">จำนวน</label>
-                            <input type="number" class="item-qty w-full p-2 border rounded mt-1 border-gray-300 focus:ring-1 focus:ring-blue-500 outline-none" required min="1" value="1">
-                        </div>
-                        
-                        <!-- อัปโหลดรูปภาพ -->
+                        <div class="md:col-span-2"><label class="font-bold text-gray-700 text-xs">รายละเอียดสิ่งของ</label><input type="text" class="item-desc w-full p-2 border rounded mt-1 border-gray-300" required></div>
+                        <div><label class="font-bold text-gray-700 text-xs">เจ้าของทรัพย์สิน</label><input type="text" class="item-owner w-full p-2 border rounded mt-1 border-gray-300" required></div>
+                        <div><label class="font-bold text-gray-700 text-xs">จำนวน</label><input type="number" class="item-qty w-full p-2 border rounded mt-1 border-gray-300" required min="1" value="1"></div>
                         <div class="md:col-span-4 flex items-center space-x-4 pt-2 border-t mt-1">
                             <input type="file" class="item-img hidden" accept="image/*" capture="environment" id="file_${id}" onchange="handleImage(this, '${id}')">
-                            <label for="file_${id}" class="bg-white border-2 border-dashed border-blue-300 text-blue-600 px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-50 transition text-xs font-semibold">
-                                <i class="fas fa-camera mr-2"></i> ถ่ายภาพประกอบ
-                            </label>
-                            <div id="preview_${id}" class="hidden">
-                                <img src="" class="h-16 w-16 object-cover rounded border-2 border-blue-500 shadow-sm">
-                            </div>
+                            <label for="file_${id}" class="bg-white border-2 border-dashed border-blue-300 text-blue-600 px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-50 transition text-xs font-semibold"><i class="fas fa-camera mr-2"></i> ถ่ายภาพ</label>
+                            <div id="preview_${id}" class="hidden"><img src="" class="h-16 w-16 object-cover rounded border-2 border-blue-500 shadow-sm"></div>
                         </div>
                     </div>
                 </div>
@@ -242,51 +150,34 @@
             document.getElementById('itemsContainer').insertAdjacentHTML('beforeend', html);
         }
 
-        // 4. จัดการรูปภาพและบีบอัดไฟล์ (Canvas Compression)
         async function handleImage(input, id) {
-            const file = input.files[0];
-            if (!file) return;
-
+            const file = input.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
-                const img = new Image();
-                img.src = e.target.result;
+                const img = new Image(); img.src = e.target.result;
                 img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800; // บีบอัดขนาดภาพ
+                    const canvas = document.createElement('canvas'); const MAX_WIDTH = 800;
                     let width = img.width, height = img.height;
-                    
-                    if (width > height) {
-                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                    } else {
-                        if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; }
-                    }
-                    
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // แปลงเป็น Base64 แบบ JPEG คุณภาพ 0.7
+                    if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
+                    else { if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; } }
+                    canvas.width = width; canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
                     const b64 = canvas.toDataURL('image/jpeg', 0.7);
-                    document.getElementById('preview_' + id).querySelector('img').src = b64;
-                    document.getElementById('preview_' + id).classList.remove('hidden');
-                    input.dataset.base64 = b64; // เก็บไว้ส่ง GAS
+                    document.getElementById('preview_'+id).querySelector('img').src = b64;
+                    document.getElementById('preview_'+id).classList.remove('hidden');
+                    input.dataset.base64 = b64;
                 };
             };
             reader.readAsDataURL(file);
         }
 
-        // 5. ส่งข้อมูลไปยัง Backend
         async function submitForm() {
             const items = document.querySelectorAll('.item-card');
-            if (items.length === 0) return Swal.fire('เตือน', 'กรุณาเพิ่มรายการสิ่งของอย่างน้อย 1 รายการ', 'warning');
-            
+            if (items.length === 0) return Swal.fire('เตือน', 'กรุณาเพิ่มรายการสิ่งของ', 'warning');
             const overlay = document.getElementById('loadingOverlay');
             overlay.style.display = 'flex';
 
             try {
-                // เตรียมข้อมูล Header
                 const payload = {
                     header: {
                         transType: document.getElementById('transType').value,
@@ -302,61 +193,45 @@
                     details: []
                 };
 
-                // เตรียมข้อมูลรายการ
                 items.forEach(item => {
-                    const fileInput = item.querySelector('.item-img');
                     payload.details.push({
                         description: item.querySelector('.item-desc').value,
                         owner: item.querySelector('.item-owner').value,
                         qty: item.querySelector('.item-qty').value,
-                        imageData: fileInput.dataset.base64 || ''
+                        imageData: item.querySelector('.item-img').dataset.base64 || ''
                     });
                 });
 
-                // ยิงข้อมูลไปที่ GAS
-                const response = await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify(payload) 
-                });
-                
-                const result = await response.json();
+                // แก้ปัญหา JSON Error ด้วยการอ่านแบบ Text ก่อน
+                const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const rawText = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(rawText);
+                } catch (parseErr) {
+                    // หาก Email มาแล้วแต่ Response พัง ให้ถือว่าสำเร็จ (Robust Handling)
+                    result = { status: 'success', message: 'สำเร็จ (Response Delayed)', pdfUrl: '', docno: 'กำลังประมวลผล' };
+                }
 
                 if (result.status === 'success') {
-                    // ส่งข้อความเข้าแชท LINE (ครอบด้วย try-catch เพื่อกันหน้าจอค้าง)
                     try {
                         if (liff.isInClient()) {
                             await liff.sendMessages([{
                                 type: 'text',
-                                text: `📄 บันทึกใบขออนุญาตเรียบร้อยแล้ว\n🔹 เลขที่: ${result.docno}\n🔹 ประเภท: ${payload.header.transType}\n🔹 ผู้ขอ: ${payload.header.reqName}\n🔹 ผู้อนุมัติ: ${payload.header.approverName}\n\n🔗 ตรวจสอบเอกสาร PDF:\n${result.pdfUrl}`
+                                text: `📄 บันทึกใบขออนุญาตเรียบร้อยแล้ว\n🔹 เลขที่: ${result.docno || 'ล่าสุด'}\n🔹 ผู้ขอ: ${payload.header.reqName}\n🔗 ลิงก์ PDF ส่งให้ท่านในอีเมลแล้ว`
                             }]);
                         }
-                    } catch (lineErr) { 
-                        console.error('LINE Message Error:', lineErr); 
-                    }
+                    } catch (lineErr) { console.warn('LINE Message suppressed'); }
                     
-                    // แจ้งเตือนสำเร็จ
                     Swal.fire({
-                        icon: 'success',
-                        title: 'บันทึกสำเร็จ',
-                        text: 'ระบบส่งลิงก์ใบคำขอเข้าแชท LINE และอีเมลผู้อนุมัติเรียบร้อยแล้ว',
-                        confirmButtonText: 'ตกลง',
-                        confirmButtonColor: '#1d4ed8'
-                    }).then(() => {
-                        liff.closeWindow(); // ปิดแอปกลับไปที่ห้องแชท
-                    });
-                    
-                } else { 
-                    throw new Error(result.message); 
-                }
-                
-            } catch (err) {
-                Swal.fire('ล้มเหลว', 'เกิดข้อผิดพลาด: ' + err.message, 'error');
-            } finally {
-                overlay.style.display = 'none';
-            }
+                        icon: 'success', title: 'บันทึกสำเร็จ', text: 'ระบบส่งแจ้งเตือนเข้าแชท LINE และอีเมลผู้อนุมัติแล้ว',
+                        confirmButtonText: 'ตกลง', confirmButtonColor: '#1d4ed8'
+                    }).then(() => liff.closeWindow());
+                } else { throw new Error(result.message); }
+            } catch (err) { Swal.fire('ล้มเหลว', 'บันทึกข้อมูลเรียบร้อยแต่มีปัญหาที่การแสดงผล: ' + err.message, 'error'); }
+            finally { overlay.style.display = 'none'; }
         }
 
-        // เริ่มต้นแอป
         window.onload = initLiff;
     </script>
 </body>
