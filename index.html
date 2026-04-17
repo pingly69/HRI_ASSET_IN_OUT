@@ -31,8 +31,8 @@
     <header class="bg-blue-800 text-white p-6 shadow-md mb-6">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-xl font-bold">ใบนำทรัพย์สินออก</h1>
-                <p class="text-xs opacity-75">Property Pass Management System</p>
+                <h1 class="text-xl font-bold">ใบนำทรัพย์สินออก (Property Pass)</h1>
+                <p class="text-xs opacity-75">Management System</p>
             </div>
             <div id="userProfile" class="flex items-center space-x-3">
                 <img id="userImg" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" src="https://via.placeholder.com/40">
@@ -48,13 +48,13 @@
                     <div>
                         <label class="block font-medium text-gray-600">ประเภท</label>
                         <select id="transType" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required>
-                            <option value="1">นำออกถาวร</option>
-                            <option value="2">นำออกและนำกลับคืน</option>
+                            <option value="1">1. นำออกถาวร</option>
+                            <option value="2">2. นำออกและนำกลับคืน</option>
                         </select>
                     </div>
                     <div>
                         <label class="block font-medium text-gray-600">ชื่อผู้ขอ</label>
-                        <input type="text" id="reqName" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required>
+                        <input type="text" id="reqName" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required placeholder="ดึงข้อมูล Profile...">
                     </div>
                     <div>
                         <label class="block font-medium text-gray-600">บริษัทผู้ขอ</label>
@@ -67,17 +67,17 @@
                         </div>
                         <div>
                             <label class="block font-medium text-gray-600">ประเภทรถ</label>
-                            <input type="text" id="carType" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required>
+                            <input type="text" id="carType" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required placeholder="เช่น รถกระบะ">
                         </div>
                     </div>
                     <div class="md:col-span-2">
                         <label class="block font-medium text-gray-600 text-blue-700 font-bold">ผู้อนุมัติ</label>
                         <select id="approverName" class="mt-1 block w-full rounded-md border-blue-300 p-2 border bg-blue-50" required>
-                            <option value="">-- กำลังโหลด... --</option>
+                            <option value="">-- กำลังโหลดรายชื่อ... --</option>
                         </select>
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block font-medium text-gray-600">วัตถุประสงค์</label>
+                        <label class="block font-medium text-gray-600">วัตถุประสงค์การขนย้าย</label>
                         <textarea id="purpose" rows="2" class="mt-1 block w-full rounded-md border-gray-300 p-2 border" required></textarea>
                     </div>
                 </div>
@@ -85,16 +85,16 @@
 
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center border-b pb-2 mb-4">
-                    <h2 class="text-md font-bold text-blue-800"><i class="fas fa-boxes mr-2"></i>2. รายการ</h2>
+                    <h2 class="text-md font-bold text-blue-800"><i class="fas fa-boxes mr-2"></i>2. รายการทรัพย์สิน</h2>
                     <button type="button" onclick="addItem()" class="bg-blue-700 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-800 transition shadow-sm">
-                        <i class="fas fa-plus mr-1"></i> เพิ่ม
+                        <i class="fas fa-plus mr-1"></i> เพิ่มรายการ
                     </button>
                 </div>
                 <div id="itemsContainer" class="space-y-4"></div>
             </div>
 
-            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all text-lg">
-                <i class="fas fa-save mr-2"></i> บันทึกข้อมูล
+            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all text-lg transform active:scale-95">
+                <i class="fas fa-save mr-2"></i> บันทึกใบขออนุมัติ
             </button>
         </form>
     </main>
@@ -128,9 +128,7 @@
                         select.appendChild(opt);
                     });
                 }
-            } catch (err) { 
-                select.innerHTML = '<option value="">-- โหลดไม่สำเร็จ --</option>';
-            }
+            } catch (err) { console.error('Fetch Error:', err); }
         }
 
         function addItem() {
@@ -140,23 +138,25 @@
                     <button type="button" onclick="document.getElementById('${id}').remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full text-sm shadow-md">×</button>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
                         <div class="md:col-span-2">
-                            <label class="font-bold">รายละเอียด</label>
+                            <label class="font-bold text-gray-700 text-xs">รายละเอียด</label>
                             <input type="text" class="item-desc w-full p-2 border rounded mt-1 border-gray-300" required>
                         </div>
                         <div>
-                            <label class="font-bold">เจ้าของ</label>
+                            <label class="font-bold text-gray-700 text-xs">เจ้าของทรัพย์สิน</label>
                             <input type="text" class="item-owner w-full p-2 border rounded mt-1 border-gray-300" required>
                         </div>
                         <div>
-                            <label class="font-bold">จำนวน</label>
+                            <label class="font-bold text-gray-700 text-xs">จำนวน</label>
                             <input type="number" class="item-qty w-full p-2 border rounded mt-1 border-gray-300" required min="1" value="1">
                         </div>
-                        <div class="md:col-span-4 flex items-center space-x-4">
+                        <div class="md:col-span-4 flex items-center space-x-4 pt-2">
                             <input type="file" class="item-img hidden" accept="image/*" capture="environment" id="file_${id}" onchange="handleImage(this, '${id}')">
-                            <label for="file_${id}" class="bg-gray-200 px-4 py-2 rounded border cursor-pointer hover:bg-gray-300 text-xs">
+                            <label for="file_${id}" class="bg-gray-200 px-4 py-2 rounded border cursor-pointer hover:bg-gray-300 text-xs font-semibold">
                                 <i class="fas fa-camera mr-1"></i> ถ่ายภาพ
                             </label>
-                            <div id="preview_${id}" class="hidden"><img src="" class="h-16 w-16 object-cover rounded border-2 border-blue-500 shadow-sm"></div>
+                            <div id="preview_${id}" class="hidden">
+                                <img src="" class="h-16 w-16 object-cover rounded border-2 border-blue-500 shadow-sm">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -193,7 +193,7 @@
 
         async function submitForm() {
             const items = document.querySelectorAll('.item-card');
-            if (items.length === 0) return Swal.fire('เตือน', 'กรุณาเพิ่มรายการ', 'warning');
+            if (items.length === 0) return Swal.fire('เตือน', 'กรุณาเพิ่มรายการทรัพย์สิน', 'warning');
 
             document.getElementById('loadingOverlay').style.display = 'flex';
 
@@ -232,7 +232,7 @@
                         html: `เลขที่ใบขออนุญาต: <b>${result.docno}</b>`,
                         confirmButtonText: '<i class="fas fa-file-pdf mr-1"></i> เปิดดูใบคำขอ (PDF)',
                         showCancelButton: true,
-                        cancelButtonText: 'ปิด',
+                        cancelButtonText: 'ปิดหน้าต่าง',
                         confirmButtonColor: '#1d4ed8',
                         cancelButtonColor: '#6b7280',
                     }).then((res) => {
